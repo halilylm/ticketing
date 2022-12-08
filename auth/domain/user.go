@@ -2,7 +2,7 @@ package domain
 
 import "context"
 
-// User model
+// User domain
 type User struct {
 	ID       string `json:"id" bson:"_id,omitempty"`
 	Email    string `json:"email" bson:"email" validate:"required,email"`
