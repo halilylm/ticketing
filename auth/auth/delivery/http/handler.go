@@ -1,13 +1,14 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/halilylm/gommon/middlewares"
 	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/gommon/utils"
 	"github.com/halilylm/ticketing/auth/auth/usecase"
 	"github.com/halilylm/ticketing/auth/domain"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type authHandler struct {
@@ -112,6 +113,7 @@ func setCookie(c echo.Context, token string) {
 		Name:     "jwt",
 		Value:    token,
 		HttpOnly: true,
+		Path:     "/",
 	}
 	c.SetCookie(cookie)
 }

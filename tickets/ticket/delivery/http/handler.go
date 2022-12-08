@@ -1,13 +1,14 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/halilylm/gommon/middlewares"
 	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/gommon/utils"
 	"github.com/halilylm/ticketing/tickets/domain"
 	"github.com/halilylm/ticketing/tickets/ticket/usecase"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type ticketHandler struct {
@@ -17,12 +18,12 @@ type ticketHandler struct {
 // NewTicketHandler handler for auth
 func NewTicketHandler(g *echo.Group, ticketUC usecase.Ticket) {
 	handler := &ticketHandler{ticketUC: ticketUC}
-	
+
 	// jwt middleware
 	g.Use(middlewares.CurrentUser("jwt"))
 
 	g.POST("/", handler.NewTicket)
-	g.PUT("/", handler.UpdateTicket)
+	g.PUT("/:id", handler.UpdateTicket)
 	g.GET("/:id", handler.ShowTicket)
 	g.GET("/", handler.AvailableTickets)
 }
@@ -40,6 +41,10 @@ func (t *ticketHandler) NewTicket(c echo.Context) error {
 	if err := utils.ValidateStruct(&ticket); err != nil {
 		return c.JSON(rest.ErrorResponse(rest.NewValidationErrors(err)))
 	}
+
+	// fill user id read from cookie
+	user := middlewares.UserFromContext(c)
+	ticket.UserID = user.ID
 
 	// call the usecase
 	createdTicket, err := t.ticketUC.NewTicket(c.Request().Context(), &ticket)
@@ -66,15 +71,18 @@ func (t *ticketHandler) UpdateTicket(c echo.Context) error {
 		return c.JSON(rest.ErrorResponse(rest.NewValidationErrors(err)))
 	}
 
+	// fill the ticket id
+	ticket.ID = c.Param("id")
+
 	// call the usecase
-	updatedTicket, err := t.ticketUC.NewTicket(c.Request().Context(), &ticket)
+	updatedTicket, err := t.ticketUC.UpdateTicket(c.Request().Context(), &ticket)
 	if err != nil {
 		// errors returning from usecase layer will be rest errors
 		// so err can be used directly
 		return c.JSON(rest.ErrorResponse(err))
 	}
 
-	return c.JSON(http.StatusCreated, updatedTicket)
+	return c.JSON(http.StatusOK, updatedTicket)
 }
 
 func (t *ticketHandler) ShowTicket(c echo.Context) error {

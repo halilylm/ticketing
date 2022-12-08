@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+
 	"github.com/halilylm/ticketing/tickets/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,24 +34,32 @@ func (t *ticketRepository) Insert(ctx context.Context, ticket *domain.Ticket) (*
 // so there will be version control before update
 // and version increment after update
 func (t *ticketRepository) Update(ctx context.Context, ticket *domain.Ticket) (*domain.Ticket, error) {
-	if _, err := t.collection.UpdateOne(ctx, bson.M{
+	id, _ := primitive.ObjectIDFromHex(ticket.ID)
+	var updatedTicket domain.Ticket
+
+	res := t.collection.FindOneAndUpdate(ctx, bson.M{
 		"version": ticket.Version,
-		"_id":     ticket.ID,
+		"_id":     id,
 	}, bson.M{"$set": map[string]any{
 		"title":    ticket.Title,
 		"version":  ticket.Version + 1,
 		"price":    ticket.Price,
 		"order_id": ticket.OrderID,
-	}}); err != nil {
+	}})
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+	if err := res.Decode(&updatedTicket); err != nil {
 		return nil, err
 	}
-	return ticket, nil
+	return &updatedTicket, nil
 }
 
 // FindByID finds a ticket by its id
 func (t *ticketRepository) FindByID(ctx context.Context, id string) (*domain.Ticket, error) {
+	tid, _ := primitive.ObjectIDFromHex(id)
 	var foundTicket domain.Ticket
-	res := t.collection.FindOne(ctx, bson.M{"_id": id})
+	res := t.collection.FindOne(ctx, bson.M{"_id": tid})
 	if res.Err() != nil {
 		return nil, res.Err()
 	}

@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+
 	"github.com/halilylm/ticketing/auth/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -30,8 +31,9 @@ func (u *userRepository) Insert(ctx context.Context, user *domain.User) (*domain
 
 // FindByID finds a user by its id
 func (u *userRepository) FindByID(ctx context.Context, id string) (*domain.User, error) {
+	uid, _ := primitive.ObjectIDFromHex(id)
 	var foundUser domain.User
-	res := u.collection.FindOne(ctx, bson.M{"_id": id})
+	res := u.collection.FindOne(ctx, bson.M{"_id": uid})
 	if res.Err() != nil {
 		return nil, res.Err()
 	}

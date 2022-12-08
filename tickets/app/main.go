@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"net/http"
+
 	"github.com/halilylm/gommon/db"
 	"github.com/halilylm/gommon/logger/sugared"
 	"github.com/halilylm/gommon/utils"
@@ -10,7 +12,7 @@ import (
 	"github.com/halilylm/ticketing/tickets/ticket/repository/mongodb"
 	"github.com/halilylm/ticketing/tickets/ticket/usecase"
 	"github.com/labstack/echo/v4"
-	"net/http"
+
 	"os"
 	"os/signal"
 	"time"
@@ -47,7 +49,7 @@ func main() {
 	// set routes
 	e := echo.New()
 	api := e.Group("/api")
-	ticket := api.Group("/ticket")
+	ticket := api.Group("/tickets")
 	v1 := ticket.Group("/v1")
 
 	// init handlers
