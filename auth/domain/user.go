@@ -4,12 +4,16 @@ import "context"
 
 // User model
 type User struct {
-	ID       string `json:"-" bson:"_id,omitempty"`
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
+	ID       string `json:"id" bson:"_id,omitempty"`
+	Email    string `json:"email" bson:"email" validate:"required,email"`
+	Password string `json:"password,omitempty" bson:"password" validate:"required"`
 }
 
-// UserRepository
+func (u *User) HidePassword() {
+	u.Password = ""
+}
+
+// UserRepository to interact db
 type UserRepository interface {
 	Insert(ctx context.Context, user *User) (*User, error)
 	FindByID(ctx context.Context, id string) (*User, error)

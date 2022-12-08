@@ -2,7 +2,6 @@ package mongodb
 
 import (
 	"context"
-
 	"github.com/halilylm/ticketing/auth/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -13,6 +12,11 @@ type userRepository struct {
 	collection *mongo.Collection
 }
 
+// NewUserRepository returns a new mongo user repository
+func NewUserRepository(collection *mongo.Collection) domain.UserRepository {
+	return &userRepository{collection}
+}
+
 // Insert creates a new user in mongodb
 func (u *userRepository) Insert(ctx context.Context, user *domain.User) (*domain.User, error) {
 	res, err := u.collection.InsertOne(ctx, user)
@@ -20,7 +24,7 @@ func (u *userRepository) Insert(ctx context.Context, user *domain.User) (*domain
 		return nil, err
 	}
 	uid, _ := res.InsertedID.(primitive.ObjectID)
-	user.ID = uid.String()
+	user.ID = uid.Hex()
 	return user, nil
 }
 
@@ -31,7 +35,7 @@ func (u *userRepository) FindByID(ctx context.Context, id string) (*domain.User,
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
-	if err := res.Decode(foundUser); err != nil {
+	if err := res.Decode(&foundUser); err != nil {
 		return nil, err
 	}
 	return &foundUser, nil
@@ -44,7 +48,7 @@ func (u *userRepository) FindByEmail(ctx context.Context, email string) (*domain
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
-	if err := res.Decode(foundUser); err != nil {
+	if err := res.Decode(&foundUser); err != nil {
 		return nil, err
 	}
 	return &foundUser, nil
