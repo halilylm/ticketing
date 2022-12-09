@@ -8,7 +8,7 @@ type Ticket struct {
 	Title   string  `json:"title" bson:"title" validate:"required"`
 	Price   int     `json:"price" bson:"price" validate:"number"`
 	UserID  string  `json:"user_id" bson:"user_id"`
-	Version int     `json:"version" bson:"version" validate:"number"`
+	Version int     `json:"version,omitempty" bson:"version" validate:"number"`
 	OrderID *string `json:"order_id" bson:"order_id"`
 }
 

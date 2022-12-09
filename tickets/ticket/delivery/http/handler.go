@@ -86,7 +86,7 @@ func (t *ticketHandler) UpdateTicket(c echo.Context) error {
 }
 
 func (t *ticketHandler) ShowTicket(c echo.Context) error {
-	// get id of wanted document
+	// id of wanted ticket
 	id := c.Param("id")
 
 	// call the usecase
