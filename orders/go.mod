@@ -3,7 +3,7 @@ module github.com/halilylm/ticketing/orders
 go 1.19
 
 require (
-	github.com/halilylm/gommon v1.1.10
+	github.com/halilylm/gommon v1.1.19
 	go.mongodb.org/mongo-driver v1.11.0
 )
 

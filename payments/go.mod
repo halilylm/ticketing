@@ -3,7 +3,7 @@ module github.com/halilylm/ticketing/payments
 go 1.19
 
 require (
-	github.com/halilylm/gommon v1.1.12
+	github.com/halilylm/gommon v1.1.19
 	go.mongodb.org/mongo-driver v1.11.1
 )
 

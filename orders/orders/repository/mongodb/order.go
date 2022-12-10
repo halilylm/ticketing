@@ -2,10 +2,11 @@ package mongodb
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 	"github.com/halilylm/gommon/events/common/types"
 	"github.com/halilylm/ticketing/orders/domain"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -18,12 +19,11 @@ func NewOrderRepository(collection *mongo.Collection) domain.OrderRepository {
 }
 
 func (o *orderRepository) Insert(ctx context.Context, order *domain.Order) (*domain.Order, error) {
-	res, err := o.collection.InsertOne(ctx, order)
+	order.ID = uuid.NewString()
+	_, err := o.collection.InsertOne(ctx, order)
 	if err != nil {
 		return nil, err
 	}
-	uid, _ := res.InsertedID.(primitive.ObjectID)
-	order.ID = uid.Hex()
 	return order, nil
 }
 
@@ -34,9 +34,8 @@ func (o *orderRepository) IsReserved(ctx context.Context, ticketID string) bool 
 
 // FindByID finds a order by its id
 func (o *orderRepository) FindByID(ctx context.Context, id string) (*domain.Order, error) {
-	tid, _ := primitive.ObjectIDFromHex(id)
 	var foundOrder domain.Order
-	res := o.collection.FindOne(ctx, bson.M{"_id": tid})
+	res := o.collection.FindOne(ctx, bson.M{"_id": id})
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
@@ -47,8 +46,7 @@ func (o *orderRepository) FindByID(ctx context.Context, id string) (*domain.Orde
 }
 
 func (o *orderRepository) Delete(ctx context.Context, id string) error {
-	tid, _ := primitive.ObjectIDFromHex(id)
-	res, err := o.collection.DeleteOne(ctx, bson.M{"_id": tid})
+	res, err := o.collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
@@ -79,11 +77,10 @@ func (o *orderRepository) ListUserOrders(ctx context.Context, userID string) ([]
 }
 
 func (o *orderRepository) UpdateStatus(ctx context.Context, id string, status types.OrderStatus) (*domain.Order, error) {
-	oid, _ := primitive.ObjectIDFromHex(id)
 	var updatedOrder domain.Order
 
 	res := o.collection.FindOneAndUpdate(ctx, bson.M{
-		"_id": oid,
+		"_id": id,
 	}, bson.M{"$set": map[string]any{
 		"status": status,
 	}})

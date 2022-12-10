@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/halilylm/gommon/db"
+	"github.com/halilylm/gommon/events/nats"
 	"github.com/halilylm/gommon/logger/sugared"
 	"github.com/halilylm/gommon/utils"
 	_ticketHandler "github.com/halilylm/ticketing/tickets/ticket/delivery/http"
@@ -43,8 +44,20 @@ func main() {
 	// init repositories
 	ticketRepo := mongodb.NewTicketRepository(ticketCollection)
 
+	// init nats streaming
+	streaming, err := nats.New(nats.Options{
+		nil,
+		appLogger,
+		[]string{"nats://localhost:4222"},
+		"test-cluster",
+		"client_id",
+	})
+	if err != nil {
+		appLogger.Fatal(err)
+	}
+
 	// init usecases
-	ticketUC := usecase.NewTicket(ticketRepo, appLogger)
+	ticketUC := usecase.NewTicket(ticketRepo, appLogger, streaming)
 
 	// set routes
 	e := echo.New()

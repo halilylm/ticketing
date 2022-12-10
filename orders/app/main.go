@@ -3,19 +3,23 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/halilylm/gommon/db"
-	"github.com/halilylm/gommon/logger/sugared"
-	"github.com/halilylm/gommon/utils"
-	_orderHandler "github.com/halilylm/ticketing/orders/orders/delivery/http"
-	_orderRepo "github.com/halilylm/ticketing/orders/orders/repository/mongodb"
-	"github.com/halilylm/ticketing/orders/orders/usecase"
-	_ticketRepo "github.com/halilylm/ticketing/orders/ticket/repository/mongodb"
-	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/halilylm/gommon/db"
+	"github.com/halilylm/gommon/events/nats"
+	"github.com/halilylm/gommon/logger/sugared"
+	"github.com/halilylm/gommon/utils"
+	_orderHandler "github.com/halilylm/ticketing/orders/orders/delivery/http"
+	_orderRepo "github.com/halilylm/ticketing/orders/orders/repository/mongodb"
+	_orderUC "github.com/halilylm/ticketing/orders/orders/usecase"
+	"github.com/halilylm/ticketing/orders/ticket/delivery/natsream"
+	_ticketRepo "github.com/halilylm/ticketing/orders/ticket/repository/mongodb"
+	_ticketUC "github.com/halilylm/ticketing/orders/ticket/usecase"
+	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func main() {
@@ -47,7 +51,8 @@ func main() {
 	ticketRepo := _ticketRepo.NewTicketRepository(ticketCollection)
 
 	// init usecases
-	orderUC := usecase.NewOrder(ticketRepo, orderRepo, appLogger)
+	orderUC := _orderUC.NewOrder(ticketRepo, orderRepo, appLogger)
+	ticketUC := _ticketUC.NewTicket(ticketRepo, appLogger)
 
 	// set routes
 	e := echo.New()
@@ -57,6 +62,21 @@ func main() {
 
 	// init handlers
 	_orderHandler.NewOrderHandler(v1, orderUC)
+
+	// init nats streaming
+	streaming, err := nats.New(nats.Options{
+		nil,
+		appLogger,
+		[]string{"nats://localhost:4222"},
+		"test-cluster",
+		"client_id_2",
+	})
+	if err != nil {
+		appLogger.Fatal(err)
+	}
+
+	ticketConsumerGroup := natsream.NewTicketConsumerGroup(streaming, ticketUC, "orders-ticket-consumer")
+	ticketConsumerGroup.RunConsumers()
 
 	// start the application
 	go func() {

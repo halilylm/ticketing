@@ -1,6 +1,9 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"encoding/json"
+)
 
 // Ticket domain
 type Ticket struct {
@@ -10,6 +13,11 @@ type Ticket struct {
 	UserID  string  `json:"user_id" bson:"user_id"`
 	Version int     `json:"version,omitempty" bson:"version" validate:"number"`
 	OrderID *string `json:"order_id" bson:"order_id"`
+}
+
+func (t *Ticket) Marshal() []byte {
+	b, _ := json.Marshal(t)
+	return b
 }
 
 // TicketRepository to interact db

@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+
+	"github.com/halilylm/gommon/events"
+	"github.com/halilylm/gommon/events/common/messages"
 	"github.com/halilylm/gommon/logger"
 	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/ticketing/tickets/domain"
@@ -11,10 +14,11 @@ import (
 type ticket struct {
 	ticketRepo domain.TicketRepository
 	logger     logger.Logger
+	streaming  events.Streaming
 }
 
-func NewTicket(ticketRepo domain.TicketRepository, logger logger.Logger) Ticket {
-	return &ticket{ticketRepo: ticketRepo, logger: logger}
+func NewTicket(ticketRepo domain.TicketRepository, logger logger.Logger, streaming events.Streaming) Ticket {
+	return &ticket{ticketRepo: ticketRepo, logger: logger, streaming: streaming}
 }
 
 func (t *ticket) NewTicket(ctx context.Context, ticket *domain.Ticket) (*domain.Ticket, error) {
@@ -22,6 +26,9 @@ func (t *ticket) NewTicket(ctx context.Context, ticket *domain.Ticket) (*domain.
 	if err != nil {
 		t.logger.Error(err)
 		return nil, rest.NewInternalServerError()
+	}
+	if err := t.streaming.Publish(messages.TicketCreated, createdTicket.Marshal()); err != nil {
+		t.logger.Error(err)
 	}
 	return createdTicket, nil
 }
@@ -34,6 +41,9 @@ func (t *ticket) UpdateTicket(ctx context.Context, ticket *domain.Ticket) (*doma
 			return nil, rest.NewNotFoundError()
 		}
 		return nil, rest.NewInternalServerError()
+	}
+	if err := t.streaming.Publish(messages.TicketUpdated, updatedTicket.Marshal()); err != nil {
+		t.logger.Error(err)
 	}
 	return updatedTicket, nil
 }
