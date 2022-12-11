@@ -39,11 +39,11 @@ func (tcg *TicketConsumerGroup) consumeCreatedTickets(
 		wg.Add(1)
 		go func(workerID int) {
 			log.Printf("%d started working\n", workerID)
-			events, err := tcg.stream.Consume(topic, tcg.groupID, true, time.Minute)
+			deliveredEvents, err := tcg.stream.Consume(topic, tcg.groupID, true, time.Minute)
 			if err != nil {
 				log.Fatal(err)
 			}
-			for event := range events {
+			for event := range deliveredEvents {
 				var deliveredEvent messages.TicketCreatedEvent
 				if err := event.Unmarshal(&deliveredEvent); err != nil {
 					log.Println(err)
@@ -78,11 +78,11 @@ func (tcg *TicketConsumerGroup) consumeUpdatedTickets(
 		wg.Add(1)
 		go func(workerID int) {
 			log.Printf("%d started working\n", workerID)
-			events, err := tcg.stream.Consume(topic, tcg.groupID, true, time.Minute)
+			deliveredEvents, err := tcg.stream.Consume(topic, tcg.groupID, true, time.Minute)
 			if err != nil {
 				log.Fatal(err)
 			}
-			for event := range events {
+			for event := range deliveredEvents {
 				var deliveredEvent messages.TicketUpdatedEvent
 				if err := event.Unmarshal(&deliveredEvent); err != nil {
 					log.Println(err)
@@ -94,7 +94,8 @@ func (tcg *TicketConsumerGroup) consumeUpdatedTickets(
 					Price:   deliveredEvent.Price,
 					Version: deliveredEvent.Version,
 				}
-				createdTicket, err := tcg.ticketUC.CreateTicket(context.TODO(), &ticket)
+				log.Println(ticket.ID, ticket.Title, ticket.Price, ticket.Version)
+				createdTicket, err := tcg.ticketUC.UpdateTicket(context.TODO(), &ticket)
 				if err != nil {
 					log.Println(err)
 					continue

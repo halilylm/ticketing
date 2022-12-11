@@ -9,7 +9,9 @@ import (
 	_authHandler "github.com/halilylm/ticketing/auth/auth/delivery/http"
 	"github.com/halilylm/ticketing/auth/auth/repository/mongodb"
 	"github.com/halilylm/ticketing/auth/auth/usecase"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +19,12 @@ import (
 )
 
 func main() {
+	// parse env variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error loading .env file")
+	}
+
 	// set the logger
 	appLogger := sugared.New(sugared.Options{
 		Level:       "info",

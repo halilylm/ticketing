@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/halilylm/gommon/events/common/types"
 )
 
@@ -13,6 +14,12 @@ type Order struct {
 	TicketID string            `json:"ticket_id" bson:"ticket_id"`
 	Version  int               `json:"version,omitempty" bson:"version"`
 }
+
+func (o *Order) Marshal() []byte {
+	b, _ := json.Marshal(o)
+	return b
+}
+
 type OrderRepository interface {
 	Insert(ctx context.Context, order *Order) (*Order, error)
 	IsReserved(ctx context.Context, ticketID string) bool

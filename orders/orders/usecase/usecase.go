@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/halilylm/gommon/events"
+	"github.com/halilylm/gommon/events/common/messages"
 	"github.com/halilylm/gommon/events/common/types"
 	"github.com/halilylm/gommon/logger"
 	"github.com/halilylm/gommon/rest"
@@ -13,10 +16,11 @@ type order struct {
 	ticketRepo domain.TicketRepository
 	orderRepo  domain.OrderRepository
 	logger     logger.Logger
+	stream     events.Streaming
 }
 
-func NewOrder(ticketRepo domain.TicketRepository, orderRepo domain.OrderRepository, logger logger.Logger) Order {
-	return &order{ticketRepo: ticketRepo, orderRepo: orderRepo, logger: logger}
+func NewOrder(ticketRepo domain.TicketRepository, orderRepo domain.OrderRepository, logger logger.Logger, stream events.Streaming) Order {
+	return &order{ticketRepo: ticketRepo, orderRepo: orderRepo, logger: logger, stream: stream}
 }
 
 func (o *order) NewOrder(ctx context.Context, ticketID, userID string) (*domain.Order, error) {
@@ -44,6 +48,20 @@ func (o *order) NewOrder(ctx context.Context, ticketID, userID string) (*domain.
 
 	createdOrder, err := o.orderRepo.Insert(ctx, order)
 	if err != nil {
+		return nil, rest.NewInternalServerError()
+	}
+	msg := messages.OrderCreatedEvent{
+		ID:       createdOrder.ID,
+		Version:  createdOrder.Version,
+		Status:   createdOrder.Status,
+		UserID:   createdOrder.UserID,
+		TicketID: ticketID,
+	}
+	encodedMsg, err := json.Marshal(msg)
+	if err != nil {
+		o.logger.Error(err)
+	}
+	if err := o.stream.Publish(messages.OrderCreated, encodedMsg); err != nil {
 		return nil, rest.NewInternalServerError()
 	}
 

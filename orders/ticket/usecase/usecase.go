@@ -18,6 +18,7 @@ func NewTicket(ticketRepo domain.TicketRepository, logger logger.Logger) Ticket 
 
 type Ticket interface {
 	CreateTicket(ctx context.Context, ticket *domain.Ticket) (*domain.Ticket, error)
+	UpdateTicket(ctx context.Context, ticket *domain.Ticket) (*domain.Ticket, error)
 }
 
 func (t *ticket) CreateTicket(ctx context.Context, ticket *domain.Ticket) (*domain.Ticket, error) {

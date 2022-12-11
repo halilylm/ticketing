@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -23,6 +25,12 @@ import (
 )
 
 func main() {
+	// parse env variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error loading .env file")
+	}
+
 	// set the logger
 	appLogger := sugared.New(sugared.Options{
 		Level:       "info",
@@ -41,6 +49,18 @@ func main() {
 		appLogger.Fatal(err)
 	}
 
+	// connect to nats
+	streaming, err := nats.New(nats.Options{
+		nil,
+		appLogger,
+		[]string{os.Getenv("NATS_URI")},
+		os.Getenv("NATS_CLUSTER_ID"),
+		os.Getenv("NATS_CLIENT_ID"),
+	})
+	if err != nil {
+		appLogger.Fatal(err)
+	}
+
 	// init collections
 	orderCollection := client.Database("orders").Collection("orders")
 	ticketCollection := client.Database("orders").Collection("tickets")
@@ -51,7 +71,7 @@ func main() {
 	ticketRepo := _ticketRepo.NewTicketRepository(ticketCollection)
 
 	// init usecases
-	orderUC := _orderUC.NewOrder(ticketRepo, orderRepo, appLogger)
+	orderUC := _orderUC.NewOrder(ticketRepo, orderRepo, appLogger, streaming)
 	ticketUC := _ticketUC.NewTicket(ticketRepo, appLogger)
 
 	// set routes
@@ -62,18 +82,6 @@ func main() {
 
 	// init handlers
 	_orderHandler.NewOrderHandler(v1, orderUC)
-
-	// init nats streaming
-	streaming, err := nats.New(nats.Options{
-		nil,
-		appLogger,
-		[]string{"nats://localhost:4222"},
-		"test-cluster",
-		"client_id_2",
-	})
-	if err != nil {
-		appLogger.Fatal(err)
-	}
 
 	ticketConsumerGroup := natsream.NewTicketConsumerGroup(streaming, ticketUC, "orders-ticket-consumer")
 	ticketConsumerGroup.RunConsumers()

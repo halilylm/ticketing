@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/halilylm/gommon/events"
 	"github.com/halilylm/gommon/events/common/messages"
@@ -27,7 +28,18 @@ func (t *ticket) NewTicket(ctx context.Context, ticket *domain.Ticket) (*domain.
 		t.logger.Error(err)
 		return nil, rest.NewInternalServerError()
 	}
-	if err := t.streaming.Publish(messages.TicketCreated, createdTicket.Marshal()); err != nil {
+	msg := messages.TicketCreatedEvent{
+		ID:      createdTicket.ID,
+		Version: createdTicket.Version,
+		Title:   createdTicket.Title,
+		Price:   createdTicket.Price,
+		UserID:  createdTicket.UserID,
+	}
+	encodedMsg, err := json.Marshal(msg)
+	if err != nil {
+		t.logger.Error(err)
+	}
+	if err := t.streaming.Publish(messages.TicketCreated, encodedMsg); err != nil {
 		t.logger.Error(err)
 	}
 	return createdTicket, nil

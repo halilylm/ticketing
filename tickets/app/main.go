@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/halilylm/ticketing/tickets/ticket/delivery/natstream"
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
 
 	"github.com/halilylm/gommon/db"
@@ -20,6 +23,12 @@ import (
 )
 
 func main() {
+	// parse env variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error loading .env file")
+	}
+
 	// set the logger
 	appLogger := sugared.New(sugared.Options{
 		Level:       "info",
@@ -28,7 +37,7 @@ func main() {
 	appLogger.Init()
 
 	// env variables checkpoint
-	utils.RequireEnvVariables("MONGO_URI", "APP_PORT", "JWT_KEY")
+	utils.RequireEnvVariables("MONGO_URI", "APP_PORT", "JWT_KEY", "NATS_URI", "NATS_CLUSTER_ID", "NATS_CLIENT_ID")
 
 	// connect to mongodb
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -38,23 +47,23 @@ func main() {
 		appLogger.Fatal(err)
 	}
 
+	// connect to nats
+	streaming, err := nats.New(nats.Options{
+		nil,
+		appLogger,
+		[]string{os.Getenv("NATS_URI")},
+		os.Getenv("NATS_CLUSTER_ID"),
+		os.Getenv("NATS_CLIENT_ID"),
+	})
+	if err != nil {
+		appLogger.Fatal(err)
+	}
+
 	// init collections
 	ticketCollection := client.Database("ticket").Collection("tickets")
 
 	// init repositories
 	ticketRepo := mongodb.NewTicketRepository(ticketCollection)
-
-	// init nats streaming
-	streaming, err := nats.New(nats.Options{
-		nil,
-		appLogger,
-		[]string{"nats://localhost:4222"},
-		"test-cluster",
-		"client_id",
-	})
-	if err != nil {
-		appLogger.Fatal(err)
-	}
 
 	// init usecases
 	ticketUC := usecase.NewTicket(ticketRepo, appLogger, streaming)
@@ -67,6 +76,9 @@ func main() {
 
 	// init handlers
 	_ticketHandler.NewTicketHandler(v1, ticketUC)
+
+	orderConsumerGroup := natstream.NewOrderConsumerGroup(streaming, ticketUC, "ticket_order_consumer")
+	orderConsumerGroup.RunConsumers()
 
 	// start the application
 	go func() {
