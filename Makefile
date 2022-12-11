@@ -15,4 +15,4 @@ run_tickets:
 push:
 	git add .
 	git commit -m "just update"
-	git push origin main
+	git push -f origin main
