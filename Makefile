@@ -1,4 +1,4 @@
-.PHONY: sync_common run_docker run_auth run_order run_tickets push
+.PHONY: sync_common run_docker run_auth run_order run_tickets git_push
 URL="github.com/halilylm/gommon@v1.1.20"
 sync_common:
 	cd orders && go get ${URL}
@@ -17,7 +17,7 @@ run_order:
 run_tickets:
 	cd tickets && go mod tidy && go run app/main.go
 
-push:
+git_push:
 	git add .
 	git commit -m "just update"
 	git push -f git@github.com:halilylm/ticketing.git main
