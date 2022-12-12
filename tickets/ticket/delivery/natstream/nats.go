@@ -106,4 +106,5 @@ func (ocg *OrderConsumerGroup) consumeCancelledOrders(workersNum int, topic stri
 
 func (ocg *OrderConsumerGroup) RunConsumers() {
 	go ocg.consumeCreatedOrders(10, messages.OrderCreated)
+	go ocg.consumeCancelledOrders(10, messages.OrderCancelled)
 }
