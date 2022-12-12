@@ -3,8 +3,6 @@ package http
 import (
 	"github.com/halilylm/gommon/middlewares"
 	"github.com/halilylm/gommon/rest"
-	"github.com/halilylm/gommon/utils"
-	"github.com/halilylm/ticketing/orders/dto"
 	"github.com/halilylm/ticketing/orders/orders/usecase"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -21,30 +19,21 @@ func NewOrderHandler(g *echo.Group, orderUC usecase.Order) {
 	// jwt middleware
 	g.Use(middlewares.CurrentUser("jwt"))
 
-	g.POST("/", handler.NewOrder)
+	g.POST("/:ticket_id", handler.NewOrder)
 	g.GET("/:id", handler.ShowOrder)
 	g.DELETE("/:id", handler.DeleteOrder)
 	g.GET("/", handler.ListOrders)
 }
 
 func (o *orderHandler) NewOrder(c echo.Context) error {
-	var newOrder dto.NewOrder
-
-	// bind request body to new order
-	if err := c.Bind(&newOrder); err != nil {
-		return c.JSON(rest.ErrorResponse(rest.NewBadRequestError(err.Error())))
-	}
-
-	// validate the struct
-	if err := utils.ValidateStruct(&newOrder); err != nil {
-		return c.JSON(rest.ErrorResponse(rest.NewValidationErrors(err)))
-	}
+	// id of wanted order
+	ticketID := c.Param("ticket_id")
 
 	// get user from the context
 	user := middlewares.UserFromContext(c)
 
 	// call the usecase
-	createdOrder, err := o.orderUC.NewOrder(c.Request().Context(), newOrder.TicketID, user.ID)
+	createdOrder, err := o.orderUC.NewOrder(c.Request().Context(), ticketID, user.ID)
 	if err != nil {
 		return c.JSON(rest.ErrorResponse(err))
 	}
