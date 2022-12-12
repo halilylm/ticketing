@@ -10,6 +10,7 @@ import (
 	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/ticketing/orders/domain"
 	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 )
 
 type order struct {
@@ -86,6 +87,14 @@ func (o *order) ShowOrder(ctx context.Context, id, userID string) (*domain.Order
 }
 
 func (o *order) DeleteOrder(ctx context.Context, id, userID string) error {
+	// find the ticket
+	foundOrder, err := o.orderRepo.FindByID(ctx, id)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return rest.NewNotFoundError()
+		}
+		return rest.NewInternalServerError()
+	}
 	// check permission
 	if err := o.havePermission(ctx, id, userID); err != nil {
 		return err
@@ -95,6 +104,15 @@ func (o *order) DeleteOrder(ctx context.Context, id, userID string) error {
 			return rest.NewNotFoundError()
 		}
 		return rest.NewInternalServerError()
+	}
+	msg := messages.OrderCancelledEvent{
+		ID:       foundOrder.ID,
+		Version:  foundOrder.Version,
+		TicketID: foundOrder.TicketID,
+	}
+	b, _ := json.Marshal(msg)
+	if err := o.stream.Publish(messages.OrderCancelled, b); err != nil {
+		log.Println(err)
 	}
 	return nil
 }

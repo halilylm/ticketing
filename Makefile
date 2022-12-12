@@ -7,11 +7,11 @@ run_docker:
 	docker run -d -p 27017:27017 --name ticketing mongo
 	docker run -d -p 4222:4222 -p 8222:8222 nats-streaming
 run_auth:
-	cd auth && go run app/main.go
+	cd auth && go mod tidy && go run app/main.go
 run_order:
-	cd orders && go run app/main.go
+	cd orders && go mod tidy && go run app/main.go
 run_tickets:
-	cd tickets && go run app/main.go
+	cd tickets && go mod tidy && go run app/main.go
 push:
 	git add .
 	git commit -m "just update"

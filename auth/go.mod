@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/halilylm/gommon v1.1.7
+	github.com/joho/godotenv v1.4.0
 	github.com/labstack/echo/v4 v4.9.1
 	go.mongodb.org/mongo-driver v1.11.0
 )

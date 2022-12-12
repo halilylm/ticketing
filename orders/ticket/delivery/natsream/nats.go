@@ -95,12 +95,11 @@ func (tcg *TicketConsumerGroup) consumeUpdatedTickets(
 					Version: deliveredEvent.Version,
 				}
 				log.Println(ticket.ID, ticket.Title, ticket.Price, ticket.Version)
-				createdTicket, err := tcg.ticketUC.UpdateTicket(context.TODO(), &ticket)
+				_, err := tcg.ticketUC.UpdateTicket(context.TODO(), &ticket)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				log.Println(createdTicket.ID)
 				if err := event.Ack(); err != nil {
 					log.Println(err)
 				}

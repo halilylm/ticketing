@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/google/uuid"
 	"github.com/halilylm/ticketing/tickets/domain"
@@ -43,7 +44,7 @@ func (t *ticketRepository) Update(ctx context.Context, ticket *domain.Ticket) (*
 		"version":  ticket.Version + 1,
 		"price":    ticket.Price,
 		"order_id": ticket.OrderID,
-	}})
+	}}, options.FindOneAndUpdate().SetReturnDocument(options.After))
 	if res.Err() != nil {
 		return nil, res.Err()
 	}

@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/google/uuid"
 	"github.com/halilylm/gommon/events/common/types"
@@ -83,7 +84,7 @@ func (o *orderRepository) UpdateStatus(ctx context.Context, id string, status ty
 		"_id": id,
 	}, bson.M{"$set": map[string]any{
 		"status": status,
-	}})
+	}}, options.FindOneAndUpdate().SetReturnDocument(options.After))
 	if res.Err() != nil {
 		return nil, res.Err()
 	}

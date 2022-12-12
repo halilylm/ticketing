@@ -28,10 +28,7 @@ func NewOrderConsumerGroup(
 	}
 }
 
-func (ocg *OrderConsumerGroup) consumeCreatedOrders(
-	workersNum int,
-	topic string,
-) {
+func (ocg *OrderConsumerGroup) consumeCreatedOrders(workersNum int, topic string) {
 	wg := &sync.WaitGroup{}
 	for i := 0; i <= workersNum; i++ {
 		wg.Add(1)
@@ -53,6 +50,44 @@ func (ocg *OrderConsumerGroup) consumeCreatedOrders(
 					continue
 				}
 				foundTicket.OrderID = &deliveredEvent.ID
+				updatedTicket, err := ocg.ticketUC.UpdateTicket(context.TODO(), foundTicket)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				if err := event.Ack(); err != nil {
+					log.Println(err)
+				}
+				if err := ocg.stream.Publish(messages.TicketUpdated, updatedTicket.Marshal()); err != nil {
+					log.Println(err)
+				}
+			}
+		}(i)
+	}
+}
+
+func (ocg *OrderConsumerGroup) consumeCancelledOrders(workersNum int, topic string) {
+	wg := &sync.WaitGroup{}
+	for i := 0; i <= workersNum; i++ {
+		wg.Add(1)
+		go func(workerID int) {
+			log.Printf("%d started working\n", workerID)
+			deliveredEvents, err := ocg.stream.Consume(topic, ocg.groupID, true, time.Minute)
+			if err != nil {
+				log.Fatal(err)
+			}
+			for event := range deliveredEvents {
+				var deliveredEvent messages.OrderCancelledEvent
+				if err := event.Unmarshal(&deliveredEvent); err != nil {
+					log.Println(err)
+					continue
+				}
+				foundTicket, err := ocg.ticketUC.ShowTicket(context.TODO(), deliveredEvent.TicketID)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				foundTicket.OrderID = nil
 				updatedTicket, err := ocg.ticketUC.UpdateTicket(context.TODO(), foundTicket)
 				if err != nil {
 					log.Println(err)
