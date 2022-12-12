@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/halilylm/gommon/events"
 	"github.com/halilylm/gommon/events/common/messages"
+	"github.com/halilylm/gommon/events/common/types"
 	"github.com/halilylm/ticketing/payments/domain"
 	"github.com/halilylm/ticketing/payments/order/usecase"
 	"log"
@@ -49,10 +50,10 @@ func (ocg *OrderConsumerGroup) consumeCreatedOrders(workersNum int, topic string
 					ID:      deliveredEvent.ID,
 					Version: deliveredEvent.Version,
 					UserID:  deliveredEvent.UserID,
-					Price:   deliveredEvent.Version,
+					Charge:  deliveredEvent.Charge,
 					Status:  deliveredEvent.Status,
 				}
-				createdTicket, err := ocg.orderUC.CreateOrder(context.TODO(), foundTicket)
+				createdOrder, err := ocg.orderUC.CreateOrder(context.TODO(), &order)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -60,9 +61,7 @@ func (ocg *OrderConsumerGroup) consumeCreatedOrders(workersNum int, topic string
 				if err := event.Ack(); err != nil {
 					log.Println(err)
 				}
-				if err := ocg.stream.Publish(messages.TicketUpdated, updatedTicket.Marshal()); err != nil {
-					log.Println(err)
-				}
+				log.Println(createdOrder.ID)
 			}
 		}(i)
 	}
@@ -84,13 +83,13 @@ func (ocg *OrderConsumerGroup) consumeCancelledOrders(workersNum int, topic stri
 					log.Println(err)
 					continue
 				}
-				foundTicket, err := ocg.ticketUC.ShowTicket(context.TODO(), deliveredEvent.TicketID)
+				foundOrder, err := ocg.orderUC.FindOrder(context.TODO(), deliveredEvent.ID, deliveredEvent.Version)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				foundTicket.OrderID = nil
-				updatedTicket, err := ocg.ticketUC.UpdateTicket(context.TODO(), foundTicket)
+				foundOrder.Status = types.Cancelled
+				updatedTicket, err := ocg.orderUC.UpdateOrder(context.TODO(), foundOrder)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -98,9 +97,7 @@ func (ocg *OrderConsumerGroup) consumeCancelledOrders(workersNum int, topic stri
 				if err := event.Ack(); err != nil {
 					log.Println(err)
 				}
-				if err := ocg.stream.Publish(messages.TicketUpdated, updatedTicket.Marshal()); err != nil {
-					log.Println(err)
-				}
+				log.Println(updatedTicket.ID + " is updated")
 			}
 		}(i)
 	}

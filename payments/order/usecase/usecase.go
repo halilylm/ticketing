@@ -14,6 +14,7 @@ type order struct {
 type Order interface {
 	CreateOrder(ctx context.Context, order *domain.Order) (*domain.Order, error)
 	UpdateOrder(ctx context.Context, order *domain.Order) (*domain.Order, error)
+	FindOrder(ctx context.Context, id string, version int) (*domain.Order, error)
 }
 
 func (o *order) CreateOrder(ctx context.Context, order *domain.Order) (*domain.Order, error) {
@@ -36,4 +37,15 @@ func (o *order) UpdateOrder(ctx context.Context, order *domain.Order) (*domain.O
 		return nil, rest.NewInternalServerError()
 	}
 	return updatedOrder, nil
+}
+
+func (o *order) FindOrder(ctx context.Context, id string, version int) (*domain.Order, error) {
+	foundOrder, err := o.orderRepo.FindByIDAndVersion(ctx, id, version)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, rest.NewNotFoundError()
+		}
+		return nil, rest.NewInternalServerError()
+	}
+	return foundOrder, nil
 }

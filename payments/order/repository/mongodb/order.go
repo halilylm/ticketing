@@ -19,7 +19,22 @@ func (o *orderRepository) Insert(ctx context.Context, order *domain.Order) (*dom
 	return order, nil
 }
 
-func (o *orderRepository) Update(ctx context.Context, order *domain.Order) (*domain.Order, error) {
+func (o *orderRepository) FindByIDAndVersion(ctx context.Context, id string, version int) (*domain.Order, error) {
+	var foundOrder domain.Order
+	res := o.collection.FindOne(ctx, bson.M{
+		"version": version - 1,
+		"_id":     id,
+	})
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+	if err := res.Decode(&foundOrder); err != nil {
+		return nil, err
+	}
+	return &foundOrder, nil
+}
+
+func (o *orderRepository) FindAndUpdate(ctx context.Context, order *domain.Order) (*domain.Order, error) {
 	var updatedOrder domain.Order
 
 	// optimistic concurrency control implemented
@@ -34,7 +49,7 @@ func (o *orderRepository) Update(ctx context.Context, order *domain.Order) (*dom
 	}, bson.M{"$set": map[string]any{
 		"version": order.Version,
 		"user_id": order.UserID,
-		"price":   order.Price,
+		"charge":  order.Charge,
 		"status":  order.Status,
 	}}, options.FindOneAndUpdate().SetReturnDocument(options.After))
 	if res.Err() != nil {
