@@ -1,6 +1,6 @@
-.PHONY: syncgommon run_docker run_auth run_order run_tickets push
+.PHONY: sync_common run_docker run_auth run_order run_tickets push
 URL="github.com/halilylm/gommon@v1.1.20"
-syncgommon:
+sync_common:
 	cd orders && go get ${URL}
 	cd tickets && go get ${URL}
 
