@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/halilylm/ticketing/orders/orders/delivery/natstream"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -83,6 +84,9 @@ func main() {
 
 	ticketConsumerGroup := natsream.NewTicketConsumerGroup(streaming, ticketUC, "orders-ticket-consumer")
 	ticketConsumerGroup.RunConsumers()
+
+	paymentConsumerGroup := natstream.NewPaymentConsumerGroup(streaming, orderUC, "orders-payment-consumer")
+	paymentConsumerGroup.RunConsumers()
 
 	// start the application
 	go func() {

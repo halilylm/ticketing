@@ -69,7 +69,7 @@ func main() {
 
 	// init usecases
 	orderUC := usecase.NewOrder(orderRepo)
-	paymentUC := usecase2.NewPayment(paymentRepo, orderRepo)
+	paymentUC := usecase2.NewPayment(paymentRepo, orderRepo, streaming)
 
 	// set routes
 	e := echo.New()

@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/halilylm/gommon/events"
+	"github.com/halilylm/gommon/events/common/messages"
 	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/ticketing/payments/domain"
 	"github.com/stripe/stripe-go"
@@ -12,10 +15,11 @@ import (
 type payment struct {
 	paymentRepo domain.PaymentRepository
 	orderRepo   domain.OrderRepository
+	stream      events.Streaming
 }
 
-func NewPayment(paymentRepo domain.PaymentRepository, orderRepo domain.OrderRepository) Payment {
-	return &payment{paymentRepo: paymentRepo, orderRepo: orderRepo}
+func NewPayment(paymentRepo domain.PaymentRepository, orderRepo domain.OrderRepository, stream events.Streaming) Payment {
+	return &payment{paymentRepo: paymentRepo, orderRepo: orderRepo, stream: stream}
 }
 
 type Payment interface {
@@ -48,5 +52,15 @@ func (p *payment) Pay(ctx context.Context, orderID string) (*domain.Payment, err
 		}
 		return nil, rest.NewInternalServerError()
 	}
+	msg := messages.PaymentCreatedEvent{
+		ID:       createdPayment.ID,
+		OrderID:  createdPayment.OrderID,
+		StripeID: createdPayment.StripeID,
+	}
+	encodedMsg, err := json.Marshal(&msg)
+	if err != nil {
+		return nil, rest.NewInternalServerError()
+	}
+	p.stream.Publish(messages.PaymentCreated, encodedMsg)
 	return createdPayment, nil
 }
