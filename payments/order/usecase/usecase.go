@@ -11,6 +11,10 @@ type order struct {
 	orderRepo domain.OrderRepository
 }
 
+func NewOrder(orderRepo domain.OrderRepository) Order {
+	return &order{orderRepo: orderRepo}
+}
+
 type Order interface {
 	CreateOrder(ctx context.Context, order *domain.Order) (*domain.Order, error)
 	UpdateOrder(ctx context.Context, order *domain.Order) (*domain.Order, error)

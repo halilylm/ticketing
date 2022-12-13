@@ -3,24 +3,23 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/halilylm/gommon/db"
+	"github.com/halilylm/gommon/events/nats"
+	"github.com/halilylm/gommon/logger/sugared"
+	"github.com/halilylm/gommon/utils"
+	"github.com/halilylm/ticketing/payments/order/delivery/natstream"
+	"github.com/halilylm/ticketing/payments/order/repository/mongodb"
+	"github.com/halilylm/ticketing/payments/order/usecase"
+	http2 "github.com/halilylm/ticketing/payments/payment/delivery/http"
+	mongodb2 "github.com/halilylm/ticketing/payments/payment/repository/mongodb"
+	usecase2 "github.com/halilylm/ticketing/payments/payment/usecase"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
-
-	"github.com/halilylm/gommon/db"
-	"github.com/halilylm/gommon/events/nats"
-	"github.com/halilylm/gommon/logger/sugared"
-	"github.com/halilylm/gommon/utils"
-	_orderHandler "github.com/halilylm/ticketing/orders/orders/delivery/http"
-	_orderRepo "github.com/halilylm/ticketing/orders/orders/repository/mongodb"
-	_orderUC "github.com/halilylm/ticketing/orders/orders/usecase"
-	"github.com/halilylm/ticketing/orders/ticket/delivery/natsream"
-	_ticketRepo "github.com/halilylm/ticketing/orders/ticket/repository/mongodb"
-	_ticketUC "github.com/halilylm/ticketing/orders/ticket/usecase"
-	"github.com/labstack/echo/v4"
 )
 
 func main() {
@@ -61,28 +60,27 @@ func main() {
 	}
 
 	// init collections
-	orderCollection := client.Database("orders").Collection("orders")
-	ticketCollection := client.Database("orders").Collection("tickets")
+	orderCollection := client.Database("payments").Collection("orders")
+	paymentCollection := client.Database("payments").Collection("payments")
 
 	// init repositories
-	orderRepo := _orderRepo.NewOrderRepository(orderCollection)
-	ticketRepo := _ticketRepo.NewTicketRepository(ticketCollection)
+	orderRepo := mongodb.NewOrderRepository(orderCollection)
+	paymentRepo := mongodb2.NewPaymentRepository(paymentCollection)
 
 	// init usecases
-	orderUC := _orderUC.NewOrder(ticketRepo, orderRepo, appLogger, streaming)
-	ticketUC := _ticketUC.NewTicket(ticketRepo, appLogger)
+	orderUC := usecase.NewOrder(orderRepo)
+	paymentUC := usecase2.NewPayment(paymentRepo, orderRepo)
 
 	// set routes
 	e := echo.New()
 	api := e.Group("/api")
-	auth := api.Group("/orders")
+	auth := api.Group("/payments")
 	v1 := auth.Group("/v1")
 
-	// init handlers
-	_orderHandler.NewOrderHandler(v1, orderUC)
+	http2.NewPaymentHandler(v1, paymentUC)
 
-	ticketConsumerGroup := natsream.NewTicketConsumerGroup(streaming, ticketUC, "orders-ticket-consumer")
-	ticketConsumerGroup.RunConsumers()
+	orderConsumerGroup := natstream.NewOrderConsumerGroup(streaming, orderUC, "payments_order")
+	orderConsumerGroup.RunConsumers()
 
 	// start the application
 	go func() {

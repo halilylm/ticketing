@@ -16,4 +16,5 @@ type OrderRepository interface {
 	Insert(ctx context.Context, order *Order) (*Order, error)
 	Update(ctx context.Context, order *Order) (*Order, error)
 	FindByIDAndVersion(ctx context.Context, id string, version int) (*Order, error)
+	FindByID(ctx context.Context, id string) (*Order, error)
 }

@@ -12,6 +12,10 @@ type orderRepository struct {
 	collection *mongo.Collection
 }
 
+func NewOrderRepository(collection *mongo.Collection) domain.OrderRepository {
+	return &orderRepository{collection: collection}
+}
+
 func (o *orderRepository) Insert(ctx context.Context, order *domain.Order) (*domain.Order, error) {
 	if _, err := o.collection.InsertOne(ctx, order); err != nil {
 		return nil, err
@@ -34,7 +38,21 @@ func (o *orderRepository) FindByIDAndVersion(ctx context.Context, id string, ver
 	return &foundOrder, nil
 }
 
-func (o *orderRepository) FindAndUpdate(ctx context.Context, order *domain.Order) (*domain.Order, error) {
+func (o *orderRepository) FindByID(ctx context.Context, id string) (*domain.Order, error) {
+	var foundOrder domain.Order
+	res := o.collection.FindOne(ctx, bson.M{
+		"_id": id,
+	})
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+	if err := res.Decode(&foundOrder); err != nil {
+		return nil, err
+	}
+	return &foundOrder, nil
+}
+
+func (o *orderRepository) Update(ctx context.Context, order *domain.Order) (*domain.Order, error) {
 	var updatedOrder domain.Order
 
 	// optimistic concurrency control implemented

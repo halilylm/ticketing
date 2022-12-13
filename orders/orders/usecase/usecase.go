@@ -57,6 +57,7 @@ func (o *order) NewOrder(ctx context.Context, ticketID, userID string) (*domain.
 		Status:   createdOrder.Status,
 		UserID:   createdOrder.UserID,
 		TicketID: ticketID,
+		Charge:   ticket.Price,
 	}
 	encodedMsg, err := json.Marshal(msg)
 	if err != nil {
