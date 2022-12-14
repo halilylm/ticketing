@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/halilylm/gommon/db"
 	"github.com/halilylm/gommon/logger/sugared"
+	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/gommon/utils"
 	_authHandler "github.com/halilylm/ticketing/auth/auth/delivery/http"
 	"github.com/halilylm/ticketing/auth/auth/repository/mongodb"
@@ -57,6 +58,11 @@ func main() {
 	api := e.Group("/api")
 	auth := api.Group("/auth")
 	v1 := auth.Group("/v1")
+
+	// 404 handler
+	echo.NotFoundHandler = func(c echo.Context) error {
+		return c.JSON(rest.ErrorResponse(rest.NewNotFoundError()))
+	}
 
 	// init handlers
 	_authHandler.NewAuthHandler(v1, authUC)

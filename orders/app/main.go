@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/ticketing/orders/orders/delivery/natstream"
 	"github.com/joho/godotenv"
 	"log"
@@ -78,6 +79,11 @@ func main() {
 	api := e.Group("/api")
 	auth := api.Group("/orders")
 	v1 := auth.Group("/v1")
+
+	// 404 handler
+	echo.NotFoundHandler = func(c echo.Context) error {
+		return c.JSON(rest.ErrorResponse(rest.NewNotFoundError()))
+	}
 
 	// init handlers
 	_orderHandler.NewOrderHandler(v1, orderUC)

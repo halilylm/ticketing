@@ -4,9 +4,11 @@ import "context"
 
 // User domain
 type User struct {
-	ID       string `json:"id" bson:"_id,omitempty"`
-	Email    string `json:"email" bson:"email" validate:"required,email"`
-	Password string `json:"password,omitempty" bson:"password" validate:"required"`
+	ID        string `json:"id" bson:"_id,omitempty"`
+	FirstName string `json:"first_name" bson:"first_name" validate:"required"`
+	Surname   string `json:"surname" bson:"surname" validate:"required"`
+	Email     string `json:"email" bson:"email" validate:"required,email"`
+	Password  string `json:"password,omitempty" bson:"password" validate:"required"`
 }
 
 func (u *User) HidePassword() {

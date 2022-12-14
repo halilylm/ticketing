@@ -6,6 +6,7 @@ import (
 	"github.com/halilylm/gommon/db"
 	"github.com/halilylm/gommon/events/nats"
 	"github.com/halilylm/gommon/logger/sugared"
+	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/gommon/utils"
 	"github.com/halilylm/ticketing/payments/order/delivery/natstream"
 	"github.com/halilylm/ticketing/payments/order/repository/mongodb"
@@ -76,6 +77,11 @@ func main() {
 	api := e.Group("/api")
 	auth := api.Group("/payments")
 	v1 := auth.Group("/v1")
+
+	// 404 handler
+	echo.NotFoundHandler = func(c echo.Context) error {
+		return c.JSON(rest.ErrorResponse(rest.NewNotFoundError()))
+	}
 
 	http2.NewPaymentHandler(v1, paymentUC)
 
