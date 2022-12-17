@@ -5,4 +5,5 @@ use (
 	./tickets
 	./orders
 	./payments
+	./products
 )

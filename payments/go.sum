@@ -38,8 +38,8 @@ github.com/google/go-cmp v0.5.2/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.8 h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/halilylm/gommon v1.1.22 h1:+5mkwGtBc1bH9+DfSC7yBBaWNVmm927fO7/rP+YXI8k=
-github.com/halilylm/gommon v1.1.22/go.mod h1:0hNy3ROc6qaT3hEUf8mg2hdPonWh5KHvR8nAw0mEriU=
+github.com/halilylm/gommon v1.2.4 h1:n/pwn6tbfOm0Xd2TdUHqBFjJYGK1MoTPgkvITFtVh/A=
+github.com/halilylm/gommon v1.2.4/go.mod h1:0hNy3ROc6qaT3hEUf8mg2hdPonWh5KHvR8nAw0mEriU=
 github.com/hashicorp/go-cleanhttp v0.5.0/go.mod h1:JpRdi6/HCYpAwUzNwuwqhbovhLtngrth3wmdIIUrZ80=
 github.com/hashicorp/go-hclog v0.9.1/go.mod h1:5CU+agLiy3J7N7QjHK5d05KxGsuXiQLrjA0H7acj2lQ=
 github.com/hashicorp/go-hclog v1.4.0 h1:ctuWFGrhFha8BnnzxqeRGidlEcQkDyL5u8J8t5eA11I=

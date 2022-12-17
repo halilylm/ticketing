@@ -1,5 +1,5 @@
 .PHONY: sync_common run_docker run_auth run_orders run_payments run_tickets git_push
-URL="github.com/halilylm/gommon@v1.1.22"
+URL="github.com/halilylm/gommon@v1.2.4"
 sync_common:
 	cd orders && go get ${URL}
 	cd tickets && go get ${URL}

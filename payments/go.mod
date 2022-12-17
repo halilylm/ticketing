@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/google/uuid v1.3.0
-	github.com/halilylm/gommon v1.1.22
+	github.com/halilylm/gommon v1.2.4
 	github.com/joho/godotenv v1.4.0
 	github.com/labstack/echo/v4 v4.9.1
 	github.com/stripe/stripe-go v70.15.0+incompatible
