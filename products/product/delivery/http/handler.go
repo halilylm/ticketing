@@ -39,6 +39,10 @@ func (p *productHandler) NewProduct(c echo.Context) error {
 	if err := utils.ValidateStruct(&product); err != nil {
 		return c.JSON(rest.ErrorResponse(rest.NewValidationErrors(err)))
 	}
+	
+	// get user from the context
+	user := middlewares.UserFromContext(c)
+	product.UserID = user.ID
 
 	// call the usecase
 	createdProduct, err := p.productUC.NewProduct(c.Request().Context(), &product)

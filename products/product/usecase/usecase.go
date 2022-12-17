@@ -27,7 +27,7 @@ func (p *product) NewProduct(ctx context.Context, product *domain.Product) (*dom
 		p.logger.Error(err)
 		return nil, rest.NewInternalServerError()
 	}
-	msg := messages.TicketCreatedEvent{
+	msg := messages.ProductCreatedEvent{
 		ID:      createdTicket.ID,
 		Version: createdTicket.Version,
 		Title:   createdTicket.Title,
@@ -38,7 +38,7 @@ func (p *product) NewProduct(ctx context.Context, product *domain.Product) (*dom
 	if err != nil {
 		p.logger.Error(err)
 	}
-	if err := p.streaming.Publish(messages.TicketCreated, encodedMsg); err != nil {
+	if err := p.streaming.Publish(messages.ProductCreated, encodedMsg); err != nil {
 		p.logger.Error(err)
 	}
 	return createdTicket, nil
@@ -53,7 +53,7 @@ func (p *product) UpdateProduct(ctx context.Context, product *domain.Product) (*
 		}
 		return nil, rest.NewInternalServerError()
 	}
-	msg := messages.TicketUpdatedEvent{
+	msg := messages.ProductUpdatedEvent{
 		ID:      updatedTicket.ID,
 		Version: updatedTicket.Version,
 		Title:   updatedTicket.Title,
@@ -64,7 +64,7 @@ func (p *product) UpdateProduct(ctx context.Context, product *domain.Product) (*
 	if err != nil {
 		p.logger.Error(err)
 	}
-	if err := p.streaming.Publish(messages.TicketUpdated, encodedMsg); err != nil {
+	if err := p.streaming.Publish(messages.ProductUpdated, encodedMsg); err != nil {
 		p.logger.Error(err)
 	}
 	return updatedTicket, nil

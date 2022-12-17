@@ -14,19 +14,19 @@ import (
 )
 
 type order struct {
-	ticketRepo domain.TicketRepository
-	orderRepo  domain.OrderRepository
-	logger     logger.Logger
-	stream     events.Streaming
+	productRepo domain.ProductRepository
+	orderRepo   domain.OrderRepository
+	logger      logger.Logger
+	stream      events.Streaming
 }
 
-func NewOrder(ticketRepo domain.TicketRepository, orderRepo domain.OrderRepository, logger logger.Logger, stream events.Streaming) Order {
-	return &order{ticketRepo: ticketRepo, orderRepo: orderRepo, logger: logger, stream: stream}
+func NewOrder(productRepo domain.ProductRepository, orderRepo domain.OrderRepository, logger logger.Logger, stream events.Streaming) Order {
+	return &order{productRepo: productRepo, orderRepo: orderRepo, logger: logger, stream: stream}
 }
 
-func (o *order) NewOrder(ctx context.Context, ticketID, userID string) (*domain.Order, error) {
+func (o *order) NewOrder(ctx context.Context, productID, userID string) (*domain.Order, error) {
 	// find the ticket
-	ticket, err := o.ticketRepo.FindByID(ctx, ticketID)
+	product, err := o.productRepo.FindByID(ctx, productID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, rest.NewNotFoundError()
@@ -35,16 +35,16 @@ func (o *order) NewOrder(ctx context.Context, ticketID, userID string) (*domain.
 	}
 
 	// check if this ticket already is reserved
-	if isReserved := o.orderRepo.IsReserved(ctx, ticket.ID); isReserved {
+	if isReserved := o.orderRepo.IsReserved(ctx, product.ID); isReserved {
 		return nil, rest.NewBadRequestError(rest.ErrTicketAlreadyReserved.Error())
 	}
 
 	// generate the order
 	order := &domain.Order{
-		UserID:   userID,
-		Status:   types.Created,
-		TicketID: ticketID,
-		Version:  0,
+		UserID:    userID,
+		Status:    types.Created,
+		ProductID: productID,
+		Version:   0,
 	}
 
 	createdOrder, err := o.orderRepo.Insert(ctx, order)
@@ -52,12 +52,12 @@ func (o *order) NewOrder(ctx context.Context, ticketID, userID string) (*domain.
 		return nil, rest.NewInternalServerError()
 	}
 	msg := messages.OrderCreatedEvent{
-		ID:       createdOrder.ID,
-		Version:  createdOrder.Version,
-		Status:   createdOrder.Status,
-		UserID:   createdOrder.UserID,
-		TicketID: ticketID,
-		Charge:   ticket.Price,
+		ID:        createdOrder.ID,
+		Version:   createdOrder.Version,
+		Status:    createdOrder.Status,
+		UserID:    createdOrder.UserID,
+		ProductID: productID,
+		Charge:    product.Price,
 	}
 	encodedMsg, err := json.Marshal(msg)
 	if err != nil {
@@ -107,9 +107,9 @@ func (o *order) DeleteOrder(ctx context.Context, id, userID string) error {
 		return rest.NewInternalServerError()
 	}
 	msg := messages.OrderCancelledEvent{
-		ID:       foundOrder.ID,
-		Version:  foundOrder.Version,
-		TicketID: foundOrder.TicketID,
+		ID:        foundOrder.ID,
+		Version:   foundOrder.Version,
+		ProductID: foundOrder.ProductID,
 	}
 	b, _ := json.Marshal(msg)
 	if err := o.stream.Publish(messages.OrderCancelled, b); err != nil {
@@ -157,7 +157,7 @@ func (o *order) havePermission(ctx context.Context, orderID, userID string) erro
 }
 
 type Order interface {
-	NewOrder(ctx context.Context, ticketID, userID string) (*domain.Order, error)
+	NewOrder(ctx context.Context, productID, userID string) (*domain.Order, error)
 	ShowOrder(ctx context.Context, id, userID string) (*domain.Order, error)
 	DeleteOrder(ctx context.Context, id, userID string) error
 	ListUserOrders(ctx context.Context, userID string) ([]*domain.Order, error)

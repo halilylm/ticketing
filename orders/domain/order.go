@@ -8,11 +8,11 @@ import (
 
 // Order domain
 type Order struct {
-	ID       string            `json:"id" bson:"_id,omitempty"`
-	UserID   string            `json:"user_id" bson:"user_id"`
-	Status   types.OrderStatus `json:"status" bson:"status"`
-	TicketID string            `json:"ticket_id" bson:"ticket_id"`
-	Version  int               `json:"version,omitempty" bson:"version"`
+	ID        string            `json:"id" bson:"_id,omitempty"`
+	UserID    string            `json:"user_id" bson:"user_id"`
+	Status    types.OrderStatus `json:"status" bson:"status"`
+	ProductID string            `json:"product_id" bson:"product_id"`
+	Version   int               `json:"version,omitempty" bson:"version"`
 }
 
 func (o *Order) Marshal() []byte {
