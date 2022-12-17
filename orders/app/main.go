@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/halilylm/gommon/rest"
-	"github.com/halilylm/ticketing/orders/orders/delivery/natstream"
+	_orderStream "github.com/halilylm/secondhand/orders/orders/delivery/natstream"
+	_productStream "github.com/halilylm/secondhand/orders/product/delivery/natsream"
+	_productRepo "github.com/halilylm/secondhand/orders/product/repository/mongodb"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -16,12 +18,10 @@ import (
 	"github.com/halilylm/gommon/events/nats"
 	"github.com/halilylm/gommon/logger/sugared"
 	"github.com/halilylm/gommon/utils"
-	_orderHandler "github.com/halilylm/ticketing/orders/orders/delivery/http"
-	_orderRepo "github.com/halilylm/ticketing/orders/orders/repository/mongodb"
-	_orderUC "github.com/halilylm/ticketing/orders/orders/usecase"
-	"github.com/halilylm/ticketing/orders/ticket/delivery/natsream"
-	_ticketRepo "github.com/halilylm/ticketing/orders/ticket/repository/mongodb"
-	_ticketUC "github.com/halilylm/ticketing/orders/ticket/usecase"
+	_orderHandler "github.com/halilylm/secondhand/orders/orders/delivery/http"
+	_orderRepo "github.com/halilylm/secondhand/orders/orders/repository/mongodb"
+	_orderUC "github.com/halilylm/secondhand/orders/orders/usecase"
+	_productUC "github.com/halilylm/secondhand/orders/product/usecase"
 	"github.com/labstack/echo/v4"
 )
 
@@ -63,16 +63,16 @@ func main() {
 	}
 
 	// init collections
-	orderCollection := client.Database("orders").Collection("orders")
-	ticketCollection := client.Database("orders").Collection("tickets")
+	orderCollection := client.Database("orders").Collection("order")
+	productCollection := client.Database("orders").Collection("product")
 
 	// init repositories
 	orderRepo := _orderRepo.NewOrderRepository(orderCollection)
-	ticketRepo := _ticketRepo.NewTicketRepository(ticketCollection)
+	productRepo := _productRepo.NewProductRepository(productCollection)
 
 	// init usecases
-	orderUC := _orderUC.NewOrder(ticketRepo, orderRepo, appLogger, streaming)
-	ticketUC := _ticketUC.NewTicket(ticketRepo, appLogger)
+	orderUC := _orderUC.NewOrder(productRepo, orderRepo, appLogger, streaming)
+	ticketUC := _productUC.NewProduct(productRepo, appLogger)
 
 	// set routes
 	e := echo.New()
@@ -88,10 +88,10 @@ func main() {
 	// init handlers
 	_orderHandler.NewOrderHandler(v1, orderUC)
 
-	ticketConsumerGroup := natsream.NewTicketConsumerGroup(streaming, ticketUC, "orders-ticket-consumer")
-	ticketConsumerGroup.RunConsumers()
+	productConsumerGroup := _productStream.NewProductConsumerGroup(streaming, ticketUC, "orders-product-consumer")
+	productConsumerGroup.RunConsumers()
 
-	paymentConsumerGroup := natstream.NewPaymentConsumerGroup(streaming, orderUC, "orders-payment-consumer")
+	paymentConsumerGroup := _orderStream.NewPaymentConsumerGroup(streaming, orderUC, "orders-payment-consumer")
 	paymentConsumerGroup.RunConsumers()
 
 	// start the application

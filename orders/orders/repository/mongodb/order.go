@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/halilylm/gommon/events/common/types"
-	"github.com/halilylm/ticketing/orders/domain"
+	"github.com/halilylm/secondhand/orders/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )

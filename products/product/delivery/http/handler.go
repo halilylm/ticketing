@@ -1,16 +1,30 @@
 package http
 
 import (
+	"github.com/halilylm/gommon/middlewares"
 	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/gommon/utils"
-	"github.com/halilylm/ticketing/product/domain"
-	"github.com/halilylm/ticketing/product/product/usecase"
+	"github.com/halilylm/secondhand/product/domain"
+	"github.com/halilylm/secondhand/product/product/usecase"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 type productHandler struct {
 	productUC usecase.Product
+}
+
+// NewProductHandler handler for products
+func NewProductHandler(g *echo.Group, productUC usecase.Product) {
+	handler := &productHandler{productUC: productUC}
+
+	// jwt middleware
+	g.Use(middlewares.CurrentUser("jwt"))
+
+	g.POST("/", handler.NewProduct)
+	g.PUT("/:id", handler.UpdateProduct)
+	g.GET("/:id", handler.ShowProduct)
+	g.GET("/", handler.AvailableProducts)
 }
 
 func (p *productHandler) NewProduct(c echo.Context) error {

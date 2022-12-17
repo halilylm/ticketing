@@ -8,29 +8,29 @@ import (
 
 	"github.com/halilylm/gommon/events"
 	"github.com/halilylm/gommon/events/common/messages"
-	"github.com/halilylm/ticketing/orders/domain"
-	"github.com/halilylm/ticketing/orders/ticket/usecase"
+	"github.com/halilylm/secondhand/orders/domain"
+	"github.com/halilylm/secondhand/orders/product/usecase"
 )
 
-type TicketConsumerGroup struct {
-	stream   events.Streaming
-	ticketUC usecase.Ticket
-	groupID  string
+type ProductConsumerGroup struct {
+	stream    events.Streaming
+	productUC usecase.Product
+	groupID   string
 }
 
-func NewTicketConsumerGroup(
+func NewProductConsumerGroup(
 	stream events.Streaming,
-	ticketUC usecase.Ticket,
+	productUC usecase.Product,
 	groupID string,
-) *TicketConsumerGroup {
-	return &TicketConsumerGroup{
-		stream:   stream,
-		ticketUC: ticketUC,
-		groupID:  groupID,
+) *ProductConsumerGroup {
+	return &ProductConsumerGroup{
+		stream:    stream,
+		productUC: productUC,
+		groupID:   groupID,
 	}
 }
 
-func (tcg *TicketConsumerGroup) consumeCreatedTickets(
+func (tcg *ProductConsumerGroup) consumeCreatedProducts(
 	workersNum int,
 	topic string,
 ) {
@@ -44,23 +44,23 @@ func (tcg *TicketConsumerGroup) consumeCreatedTickets(
 				log.Fatal(err)
 			}
 			for event := range deliveredEvents {
-				var deliveredEvent messages.TicketCreatedEvent
+				var deliveredEvent messages.ProductCreatedEvent
 				if err := event.Unmarshal(&deliveredEvent); err != nil {
 					log.Println(err)
 					continue
 				}
-				ticket := domain.Ticket{
+				product := domain.Product{
 					ID:      deliveredEvent.ID,
 					Title:   deliveredEvent.Title,
 					Price:   deliveredEvent.Price,
 					Version: deliveredEvent.Version,
 				}
-				createdTicket, err := tcg.ticketUC.CreateTicket(context.TODO(), &ticket)
+				createdProduct, err := tcg.productUC.CreateProduct(context.TODO(), &product)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				log.Println(createdTicket.ID)
+				log.Println(createdProduct.ID)
 				if err := event.Ack(); err != nil {
 					log.Println(err)
 				}
@@ -69,7 +69,7 @@ func (tcg *TicketConsumerGroup) consumeCreatedTickets(
 	}
 }
 
-func (tcg *TicketConsumerGroup) consumeUpdatedTickets(
+func (tcg *ProductConsumerGroup) consumeUpdatedProducts(
 	workersNum int,
 	topic string,
 ) {
@@ -83,19 +83,18 @@ func (tcg *TicketConsumerGroup) consumeUpdatedTickets(
 				log.Fatal(err)
 			}
 			for event := range deliveredEvents {
-				var deliveredEvent messages.TicketUpdatedEvent
+				var deliveredEvent messages.ProductUpdatedEvent
 				if err := event.Unmarshal(&deliveredEvent); err != nil {
 					log.Println(err)
 					continue
 				}
-				ticket := domain.Ticket{
+				product := domain.Product{
 					ID:      deliveredEvent.ID,
 					Title:   deliveredEvent.Title,
 					Price:   deliveredEvent.Price,
 					Version: deliveredEvent.Version,
 				}
-				log.Println(ticket.ID, ticket.Title, ticket.Price, ticket.Version)
-				_, err := tcg.ticketUC.UpdateTicket(context.TODO(), &ticket)
+				_, err := tcg.productUC.UpdateProduct(context.TODO(), &product)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -108,7 +107,7 @@ func (tcg *TicketConsumerGroup) consumeUpdatedTickets(
 	}
 }
 
-func (tcg *TicketConsumerGroup) RunConsumers() {
-	go tcg.consumeCreatedTickets(10, messages.TicketCreated)
-	go tcg.consumeUpdatedTickets(10, messages.TicketUpdated)
+func (tcg *ProductConsumerGroup) RunConsumers() {
+	go tcg.consumeCreatedProducts(10, messages.ProductCreated)
+	go tcg.consumeUpdatedProducts(10, messages.ProductUpdated)
 }

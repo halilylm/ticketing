@@ -6,7 +6,7 @@ import (
 	"github.com/halilylm/gommon/logger"
 	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/gommon/utils"
-	"github.com/halilylm/ticketing/auth/domain"
+	"github.com/halilylm/secondhand/auth/domain"
 )
 
 type auth struct {

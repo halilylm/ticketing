@@ -3,7 +3,7 @@ package http
 import (
 	"github.com/halilylm/gommon/middlewares"
 	"github.com/halilylm/gommon/rest"
-	"github.com/halilylm/ticketing/payments/payment/usecase"
+	"github.com/halilylm/secondhand/payments/payment/usecase"
 	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"

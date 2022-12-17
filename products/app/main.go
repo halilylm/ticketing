@@ -3,21 +3,19 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/halilylm/gommon/rest"
-	"github.com/halilylm/ticketing/tickets/ticket/delivery/natstream"
-	"github.com/joho/godotenv"
-	"log"
-	"net/http"
-
 	"github.com/halilylm/gommon/db"
 	"github.com/halilylm/gommon/events/nats"
 	"github.com/halilylm/gommon/logger/sugared"
+	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/gommon/utils"
-	_ticketHandler "github.com/halilylm/ticketing/tickets/ticket/delivery/http"
-	"github.com/halilylm/ticketing/tickets/ticket/repository/mongodb"
-	"github.com/halilylm/ticketing/tickets/ticket/usecase"
+	_productHandler "github.com/halilylm/secondhand/product/product/delivery/http"
+	"github.com/halilylm/secondhand/product/product/delivery/natstream"
+	"github.com/halilylm/secondhand/product/product/repository/mongodb"
+	"github.com/halilylm/secondhand/product/product/usecase"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-
+	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -61,18 +59,18 @@ func main() {
 	}
 
 	// init collections
-	ticketCollection := client.Database("ticket").Collection("tickets")
+	productCollection := client.Database("products").Collection("product")
 
 	// init repositories
-	ticketRepo := mongodb.NewTicketRepository(ticketCollection)
+	productRepo := mongodb.NewProductRepository(productCollection)
 
 	// init usecases
-	ticketUC := usecase.NewTicket(ticketRepo, appLogger, streaming)
+	productUC := usecase.NewProduct(productRepo, appLogger, streaming)
 
 	// set routes
 	e := echo.New()
 	api := e.Group("/api")
-	ticket := api.Group("/tickets")
+	ticket := api.Group("/products")
 	v1 := ticket.Group("/v1")
 
 	// 404 handler
@@ -81,9 +79,9 @@ func main() {
 	}
 
 	// init handlers
-	_ticketHandler.NewTicketHandler(v1, ticketUC)
+	_productHandler.NewProductHandler(v1, productUC)
 
-	orderConsumerGroup := natstream.NewOrderConsumerGroup(streaming, ticketUC, "ticket_order_consumer")
+	orderConsumerGroup := natstream.NewOrderConsumerGroup(streaming, productUC, "ticket_order_consumer")
 	orderConsumerGroup.RunConsumers()
 
 	// start the application

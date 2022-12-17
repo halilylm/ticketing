@@ -3,36 +3,36 @@ package mongodb
 import (
 	"context"
 
-	"github.com/halilylm/ticketing/orders/domain"
+	"github.com/halilylm/secondhand/orders/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type ticketRepository struct {
+type productRepository struct {
 	collection *mongo.Collection
 }
 
-// NewTicketRepository returns a new mongo ticket repository
-func NewTicketRepository(collection *mongo.Collection) domain.TicketRepository {
-	return &ticketRepository{collection: collection}
+// NewProductRepository returns a new mongo ticket repository
+func NewProductRepository(collection *mongo.Collection) domain.ProductRepository {
+	return &productRepository{collection: collection}
 }
 
-// FindByID finds a ticket by id
-func (t *ticketRepository) FindByID(ctx context.Context, id string) (*domain.Ticket, error) {
-	var foundTicket domain.Ticket
-	res := t.collection.FindOne(ctx, bson.M{"_id": id})
+// FindByID finds a product by id
+func (p *productRepository) FindByID(ctx context.Context, id string) (*domain.Product, error) {
+	var foundProduct domain.Product
+	res := p.collection.FindOne(ctx, bson.M{"_id": id})
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
-	if err := res.Decode(&foundTicket); err != nil {
+	if err := res.Decode(&foundProduct); err != nil {
 		return nil, err
 	}
-	return &foundTicket, nil
+	return &foundProduct, nil
 }
 
 // Insert creates a new ticket in mongodb
-func (t *ticketRepository) Insert(ctx context.Context, ticket *domain.Ticket) (*domain.Ticket, error) {
-	_, err := t.collection.InsertOne(ctx, ticket)
+func (p *productRepository) Insert(ctx context.Context, ticket *domain.Product) (*domain.Product, error) {
+	_, err := p.collection.InsertOne(ctx, ticket)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +40,8 @@ func (t *ticketRepository) Insert(ctx context.Context, ticket *domain.Ticket) (*
 }
 
 // Update updates an existing ticket in mongodb
-func (t *ticketRepository) Update(ctx context.Context, ticket *domain.Ticket) (*domain.Ticket, error) {
-	var updatedTicket domain.Ticket
+func (p *productRepository) Update(ctx context.Context, ticket *domain.Product) (*domain.Product, error) {
+	var updatedTicket domain.Product
 
 	// optimistic concurrency control implemented
 	// here version subtracted by one because
@@ -49,7 +49,7 @@ func (t *ticketRepository) Update(ctx context.Context, ticket *domain.Ticket) (*
 	// so first update will be occurred in ticket
 	// microservice so here we hold copy of ticket
 	// therefore we need to subtract by one
-	res := t.collection.FindOneAndUpdate(ctx, bson.M{
+	res := p.collection.FindOneAndUpdate(ctx, bson.M{
 		"version": ticket.Version - 1,
 		"_id":     ticket.ID,
 	}, bson.M{"$set": map[string]any{

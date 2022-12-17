@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"github.com/halilylm/ticketing/payments/domain"
+	"github.com/halilylm/secondhand/payments/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

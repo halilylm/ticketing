@@ -1,4 +1,4 @@
-module github.com/halilylm/ticketing/auth
+module github.com/halilylm/secondhand/auth
 
 go 1.19
 

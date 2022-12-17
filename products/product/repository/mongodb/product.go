@@ -3,7 +3,7 @@ package mongodb
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/halilylm/ticketing/product/domain"
+	"github.com/halilylm/secondhand/product/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

@@ -6,7 +6,7 @@ import (
 	"github.com/halilylm/gommon/events"
 	"github.com/halilylm/gommon/events/common/messages"
 	"github.com/halilylm/gommon/logger"
-	"github.com/halilylm/ticketing/product/product/usecase"
+	"github.com/halilylm/secondhand/product/product/usecase"
 	"log"
 	"sync"
 	"time"

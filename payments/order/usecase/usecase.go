@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/halilylm/gommon/rest"
-	"github.com/halilylm/ticketing/payments/domain"
+	"github.com/halilylm/secondhand/payments/domain"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

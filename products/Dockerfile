@@ -11,7 +11,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN go build -o /tickets ./app/*.go
+RUN go build -o /products ./app/*.go
 
 ## Deploy
 FROM gcr.io/distroless/base-debian11
@@ -19,10 +19,10 @@ FROM gcr.io/distroless/base-debian11
 WORKDIR /
 
 COPY --from=build /app/.env /.env
-COPY --from=build /tickets /tickets
+COPY --from=build /products /products
 
 EXPOSE 3000
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/tickets"]
+ENTRYPOINT ["/products"]

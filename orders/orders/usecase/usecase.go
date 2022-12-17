@@ -8,7 +8,7 @@ import (
 	"github.com/halilylm/gommon/events/common/types"
 	"github.com/halilylm/gommon/logger"
 	"github.com/halilylm/gommon/rest"
-	"github.com/halilylm/ticketing/orders/domain"
+	"github.com/halilylm/secondhand/orders/domain"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )

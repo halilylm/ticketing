@@ -6,7 +6,7 @@ import (
 	"github.com/halilylm/gommon/events"
 	"github.com/halilylm/gommon/events/common/messages"
 	"github.com/halilylm/gommon/rest"
-	"github.com/halilylm/ticketing/payments/domain"
+	"github.com/halilylm/secondhand/payments/domain"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/charge"
 	"go.mongodb.org/mongo-driver/mongo"

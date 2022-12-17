@@ -18,14 +18,14 @@ run_orders:
 run_payments:
 	cd payments && go mod tidy && go run app/main.go
 
-run_tickets:
-	cd tickets && go mod tidy && go run app/main.go
+run_products:
+	cd products && go mod tidy && go run app/main.go
 
 git_push:
 	cd auth && go mod tidy
 	cd orders && go mod tidy
 	cd payments && go mod tidy
-	cd tickets && go mod tidy
+	cd products && go mod tidy
 	git add .
 	git commit -m "just update"
 	git push -f git@github.com:halilylm/ticketing.git main

@@ -1,4 +1,4 @@
-module github.com/halilylm/ticketing/payments
+module github.com/halilylm/secondhand/payments
 
 go 1.19
 

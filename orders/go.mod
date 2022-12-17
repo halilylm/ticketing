@@ -1,4 +1,4 @@
-module github.com/halilylm/ticketing/orders
+module github.com/halilylm/secondhand/orders
 
 go 1.19
 

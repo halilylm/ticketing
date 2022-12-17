@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 
-	"github.com/halilylm/ticketing/auth/domain"
+	"github.com/halilylm/secondhand/auth/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )

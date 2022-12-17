@@ -7,7 +7,7 @@ import (
 	"github.com/halilylm/gommon/events/common/messages"
 	"github.com/halilylm/gommon/logger"
 	"github.com/halilylm/gommon/rest"
-	"github.com/halilylm/ticketing/product/domain"
+	"github.com/halilylm/secondhand/product/domain"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

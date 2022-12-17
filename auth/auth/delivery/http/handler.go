@@ -6,8 +6,8 @@ import (
 	"github.com/halilylm/gommon/middlewares"
 	"github.com/halilylm/gommon/rest"
 	"github.com/halilylm/gommon/utils"
-	"github.com/halilylm/ticketing/auth/auth/usecase"
-	"github.com/halilylm/ticketing/auth/domain"
+	"github.com/halilylm/secondhand/auth/auth/usecase"
+	"github.com/halilylm/secondhand/auth/domain"
 	"github.com/labstack/echo/v4"
 )
 
